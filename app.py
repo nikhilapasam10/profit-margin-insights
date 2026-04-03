@@ -16,10 +16,7 @@ st.set_page_config(page_title="Profit Margin Predictor", layout="wide")
 st.title("🛒 E-Commerce Profit Margin Predictor")
 st.write("Predict Profit Margin using order and customer details")
 
-# ---------------------------
 # Sidebar Inputs
-# ---------------------------
-
 st.sidebar.header("Input Features")
 
 price = st.sidebar.number_input("Price", min_value=0.0, value=100.0)
@@ -56,10 +53,7 @@ customer_gender = st.sidebar.selectbox(
     ["Female", "Male", "Other"]
 )
 
-# ---------------------------
 # Feature Engineering
-# ---------------------------
-
 total_amount = price * quantity * (1 - discount / 100)
 
 input_dict = {
@@ -76,7 +70,6 @@ input_dict = {
     'quarter': quarter,
 }
 
-# One-hot columns
 one_hot_cols = [
     'category_Beauty','category_Electronics','category_Fashion',
     'category_Grocery','category_Home','category_Sports','category_Toys',
@@ -88,21 +81,17 @@ one_hot_cols = [
     'customer_gender_Female','customer_gender_Male','customer_gender_Other'
 ]
 
-# Initialize one-hot columns
 for col in one_hot_cols:
     input_dict[col] = 0
 
-# Set selected values
 input_dict[f'category_{category}'] = 1
 input_dict[f'payment_method_{payment_method}'] = 1
 input_dict[f'region_{region}'] = 1
 input_dict[f'returned_{returned}'] = 1
 input_dict[f'customer_gender_{customer_gender}'] = 1
 
-# Convert to dataframe
 input_df = pd.DataFrame([input_dict])
 
-# Feature order (VERY IMPORTANT)
 feature_order = [
     'price', 'discount', 'quantity', 'delivery_time_days', 'total_amount',
     'shipping_cost', 'customer_age', 'year', 'month', 'day', 'quarter',
@@ -118,26 +107,21 @@ feature_order = [
 
 input_df = input_df[feature_order]
 
-# ---------------------------
-# Scale Numeric Features Only
-# ---------------------------
-
+# Only scale columns used during training
 numeric_cols = [
-    'price', 'discount', 'quantity', 'delivery_time_days',
-    'total_amount', 'shipping_cost', 'customer_age',
-    'year', 'month', 'day', 'quarter'
+    'price',
+    'discount',
+    'quantity',
+    'delivery_time_days',
+    'total_amount',
+    'shipping_cost',
+    'customer_age'
 ]
-
-# ---------------------------
-# Prediction
-# ---------------------------
 
 if st.button("Predict Profit Margin"):
 
-    # Scale numeric columns only
     input_df[numeric_cols] = scaler.transform(input_df[numeric_cols])
 
-    # Predict
     prediction = model.predict(input_df)[0]
 
     st.success(f"📈 Predicted Profit Margin: {prediction:.4f}")

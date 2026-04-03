@@ -4,7 +4,7 @@ import numpy as np
 import pickle
 
 # Load model
-with open("best_svr_model.pkl", "rb") as f:
+with open("best_rf_model.pkl", "rb") as f:
     model = pickle.load(f)
 
 # Load scaler

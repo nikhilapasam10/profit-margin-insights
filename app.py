@@ -11,7 +11,7 @@ with open("best_rf_model.pkl", "rb") as f:
 with open("scaler.pkl", "rb") as f:
     scaler = pickle.load(f)
 
-st.set_page_config(page_title="E-Commerce Profit Margin Predictor", layout="wide")
+st.set_page_config(page_title="Profit Margin Predictor", layout="wide")
 
 st.title("🛒 E-Commerce Profit Margin Predictor")
 st.write("Predict Profit Margin using order and customer details")
@@ -76,7 +76,8 @@ input_dict = {
     'quarter': quarter,
 }
 
-columns = [
+# One-hot columns
+one_hot_cols = [
     'category_Beauty','category_Electronics','category_Fashion',
     'category_Grocery','category_Home','category_Sports','category_Toys',
     'payment_method_COD','payment_method_Credit Card',
@@ -87,17 +88,21 @@ columns = [
     'customer_gender_Female','customer_gender_Male','customer_gender_Other'
 ]
 
-for col in columns:
+# Initialize one-hot columns
+for col in one_hot_cols:
     input_dict[col] = 0
 
+# Set selected values
 input_dict[f'category_{category}'] = 1
 input_dict[f'payment_method_{payment_method}'] = 1
 input_dict[f'region_{region}'] = 1
 input_dict[f'returned_{returned}'] = 1
 input_dict[f'customer_gender_{customer_gender}'] = 1
 
+# Convert to dataframe
 input_df = pd.DataFrame([input_dict])
 
+# Feature order (VERY IMPORTANT)
 feature_order = [
     'price', 'discount', 'quantity', 'delivery_time_days', 'total_amount',
     'shipping_cost', 'customer_age', 'year', 'month', 'day', 'quarter',
@@ -114,16 +119,26 @@ feature_order = [
 input_df = input_df[feature_order]
 
 # ---------------------------
+# Scale Numeric Features Only
+# ---------------------------
+
+numeric_cols = [
+    'price', 'discount', 'quantity', 'delivery_time_days',
+    'total_amount', 'shipping_cost', 'customer_age',
+    'year', 'month', 'day', 'quarter'
+]
+
+# ---------------------------
 # Prediction
 # ---------------------------
 
 if st.button("Predict Profit Margin"):
 
-    # Scale input
-    scaled_input = scaler.transform(input_df)
+    # Scale numeric columns only
+    input_df[numeric_cols] = scaler.transform(input_df[numeric_cols])
 
     # Predict
-    prediction = model.predict(scaled_input)[0]
+    prediction = model.predict(input_df)[0]
 
     st.success(f"📈 Predicted Profit Margin: {prediction:.4f}")
 
